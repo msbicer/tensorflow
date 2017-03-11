@@ -11,7 +11,7 @@ from text_cnn import TextCNN
 from tensorflow.contrib import learn
 import csv
 
-project_name = sys.argv[1
+project_name = sys.argv[1]
 
 device_name = sys.argv[2]  # Choose device from cmd line. Options: gpu or cpu
 
@@ -67,7 +67,7 @@ with tf.device(device_name):
     # ==================================================
     checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
     graph = tf.Graph()
-    
+
 with graph.as_default():
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement,log_device_placement=FLAGS.log_device_placement))
     with sess.as_default():
