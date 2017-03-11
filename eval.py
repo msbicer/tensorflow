@@ -12,6 +12,7 @@ from tensorflow.contrib import learn
 import csv
 
 project_name = sys.argv[1]
+checkpoint_dir = sys.argv[3]
 
 # Parameters
 # ==================================================
@@ -22,7 +23,7 @@ tf.flags.DEFINE_string("negative_data_file", "./data/"+project_name+"-data/sourc
 
 # Eval Parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
-tf.flags.DEFINE_string("checkpoint_dir", "", "Checkpoint directory from training run")
+tf.flags.DEFINE_string("checkpoint_dir", checkpoint_dir, "Checkpoint directory from training run")
 tf.flags.DEFINE_boolean("eval_train", False, "Evaluate on all training data")
 
 # Misc Parameters
