@@ -11,7 +11,15 @@ from text_cnn import TextCNN
 from tensorflow.contrib import learn
 import csv
 
-project_name = sys.argv[1]
+project_name = sys.argv[1
+
+device_name = sys.argv[2]  # Choose device from cmd line. Options: gpu or cpu
+
+if device_name == "gpu":
+    device_name = "/gpu:0"
+else:
+    device_name = "/cpu:0"
+
 checkpoint_dir = sys.argv[3]
 
 # Parameters
@@ -46,17 +54,20 @@ else:
     x_raw = ["a positive test sample", "a negative test sample"]
     y_test = [1, 0]
 
-# Map data into vocabulary
-vocab_path = os.path.join(FLAGS.checkpoint_dir, "..", "vocab")
-vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-x_test = np.array(list(vocab_processor.transform(x_raw)))
+graph = None
+with tf.device(device_name):
+    # Map data into vocabulary
+    vocab_path = os.path.join(FLAGS.checkpoint_dir, "..", "vocab")
+    vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
+    x_test = np.array(list(vocab_processor.transform(x_raw)))
 
-print("\nEvaluating...\n")
+    print("\nEvaluating...\n")
 
-# Evaluation
-# ==================================================
-checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
-graph = tf.Graph()
+    # Evaluation
+    # ==================================================
+    checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
+    graph = tf.Graph()
+    
 with graph.as_default():
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement,log_device_placement=FLAGS.log_device_placement))
     with sess.as_default():
