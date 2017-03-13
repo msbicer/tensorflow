@@ -1,6 +1,6 @@
 % import fil list and class labels
 close;clear;clc;
-project_name = 'wordpress';
+project_name = 'phpmyadmin';
 pathprefix = '/Users/sbicer/Desktop/akademik/tensorflow';
 filename = strcat(pathprefix,'/',project_name,'-files.csv');
 delimiter = ',';
@@ -59,13 +59,15 @@ for i=1:10
     [n,~] = size(negdata);
     negdata=negdata(randperm(length(negdata)));
     f=fopen(fullfile(pathprefix,'data',folder_name,strcat('sourcecodes-',int2str(i),'.neg')),'w');
-    for j=1:32
+    cutoff = idivide(int32(n*7),10);
+    for j=1:cutoff
         fprintf(f,'%s\n',negdata{j,:});
     end
     fclose(f);
 
     f=fopen(fullfile(pathprefix,'data',folder_name,strcat('sourcecodes-',int2str(i),'-val.neg')),'w');
-    for j=33:45
+    cutoff = cutoff+1;
+    for j=cutoff:n
         fprintf(f,'%s\n',negdata{j,:});
     end
     fclose(f);
@@ -74,13 +76,15 @@ for i=1:10
     [n,~] = size(posdata);
     posdata=posdata(randperm(length(posdata)));
     f=fopen(fullfile(pathprefix,'data',folder_name,strcat('sourcecodes-',int2str(i),'.pos')),'w');
-    for j=1:69
+    cutoff = idivide(int32(n*7),10);
+    for j=1:cutoff
         fprintf(f,'%s\n',posdata{j,:});
     end
     fclose(f);
 
     f=fopen(fullfile(pathprefix,'data',folder_name,strcat('sourcecodes-',int2str(i),'-val.pos')),'w');
-    for j=70:98
+    cutoff = cutoff+1;
+    for j=cutoff:n
         fprintf(f,'%s\n',posdata{j,:});
     end
     fclose(f);
