@@ -207,4 +207,4 @@ with tf.device(device_name):
                     path = saver.save(sess, checkpoint_prefix, global_step=current_step)
                     print("Saved model checkpoint to {}\n".format(path))
 
-            send_email(mail_subject,"Complete "+log_str)
+            send_email(mail_subject,"Complete")
