@@ -1,7 +1,7 @@
 % import fil list and class labels
 close;clear;clc;
-project_name = 'phpmyadmin';
-pathprefix = '/Users/sbicer/Desktop/akademik/cnn';
+project_name = 'wordpress';
+pathprefix = '/Users/sbicer/Desktop/akademik/tensorflow';
 filename = strcat(pathprefix,'/',project_name,'-files.csv');
 delimiter = ',';
 startRow = 2;
