@@ -114,7 +114,7 @@ with tf.device(device_name):
 
             # Output directory for models and summaries
             timestamp = time.strftime("%d_%m_%Y_%H_%M_%S")
-            out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
+            out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", project_name, timestamp))
             print("Writing to {}\n".format(out_dir))
 
             mail_subject = project_name+" "+str(timestamp)
