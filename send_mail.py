@@ -12,7 +12,13 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 
-def send_email(from_addr, to_addr, subject, message, attachment=None):
+EMAIL_FROM = ''
+EMAIL_TO = ''
+
+def send_email(subject, message, attachment=None):
+	from_addr = EMAIL_FROM
+	to_addr = EMAIL_TO
+	
 	msg = MIMEMultipart()
 	msg['Subject'] = subject
 

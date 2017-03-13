@@ -7,6 +7,7 @@ import sys
 import time
 import datetime
 import data_helpers
+from send_mail import send_email
 from text_cnn import TextCNN
 from tensorflow.contrib import learn
 
@@ -116,6 +117,8 @@ with tf.device(device_name):
             out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
             print("Writing to {}\n".format(out_dir))
 
+            mail_subject = project_name+" "+str(timestamp)
+
             # Summaries for loss and accuracy
             loss_summary = tf.scalar_summary("loss", cnn.loss)
             acc_summary = tf.scalar_summary("accuracy", cnn.accuracy)
@@ -163,7 +166,8 @@ with tf.device(device_name):
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
 
-                print("{}: step {}, loss {:g}, tp:{:g} fp:{:g} fn:{:g} tn:{:g} acc:{:g} tpr:{:g} fpr:{:g} prec:{:g} recall:{:g} f1:{:g} auc:{:g} balance:{:g}".format(time_str, step, loss, tp, fp, fn, tn, accuracy, tpr, fpr, precision, recall, f1_score,auc,balance))
+                log_str = "{}: step {}, loss {:g}, tp:{:g} fp:{:g} fn:{:g} tn:{:g} acc:{:g} tpr:{:g} fpr:{:g} prec:{:g} recall:{:g} f1:{:g} auc:{:g} balance:{:g}".format(time_str, step, loss, tp, fp, fn, tn, accuracy, tpr, fpr, precision, recall, f1_score,auc,balance)
+                print(log_str)
                 train_summary_writer.add_summary(summaries, step)
 
             def dev_step(x_batch, y_batch, writer=None):
@@ -179,9 +183,13 @@ with tf.device(device_name):
                     [global_step, dev_summary_op, cnn.loss, cnn.tp, cnn.fp, cnn.fn, cnn.tn, cnn.accuracy, cnn.tpr, cnn.fpr, cnn.precision, cnn.recall, cnn.f1_score, cnn.auc, cnn.balance],
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
-                print("{}: step {}, loss {:g}, tp:{:g} fp:{:g} fn:{:g} tn:{:g} acc:{:g} tpr:{:g} fpr:{:g} prec:{:g} recall:{:g} f1:{:g} auc:{:g} balance:{:g}".format(time_str, step, loss, tp, fp, fn, tn, accuracy, tpr, fpr, precision, recall, f1_score,auc,balance))
+                log_str = "{}: step {}, loss {:g}, tp:{:g} fp:{:g} fn:{:g} tn:{:g} acc:{:g} tpr:{:g} fpr:{:g} prec:{:g} recall:{:g} f1:{:g} auc:{:g} balance:{:g}".format(time_str, step, loss, tp, fp, fn, tn, accuracy, tpr, fpr, precision, recall, f1_score,auc,balance)
+                print(log_str)
                 if writer:
                     writer.add_summary(summaries, step)
+
+                send_email(mail_subject,log_str)
+
 
             # Generate batches
             batches = data_helpers.batch_iter(
@@ -198,3 +206,5 @@ with tf.device(device_name):
                 if current_step % FLAGS.checkpoint_every == 0:
                     path = saver.save(sess, checkpoint_prefix, global_step=current_step)
                     print("Saved model checkpoint to {}\n".format(path))
+
+            send_email(mail_subject,"Complete "+log_str)
