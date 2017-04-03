@@ -26,8 +26,8 @@ from six.moves import urllib
 import pandas as pd
 import tensorflow as tf
 
-LABEL_COLUMN = "Defected"
-CATEGORICAL_COLUMNS = ["Has_Session", "Has_Param", "DB_Query_Binary", "Has_HTML"]
+LABEL_COLUMN = "label"
+CATEGORICAL_COLUMNS = ["Has_Session", "Has_Param", "DB_Query_Binary", "Has_HTML","Defected"]
 CONTINUOUS_COLUMNS = ["AvgCyclomatic","AvgCyclomaticModified","AvgCyclomaticStrict","AvgEssential","AvgLine"
                       ,"AvgLineBlank","AvgLineCode","AvgLineComment","CountDeclClass","CountDeclFile","CountDeclFunction",
                       "CountLine","CountLineBlank","CountLineCode","CountLineComment","CountPath","CountStmt",
@@ -40,83 +40,45 @@ CONTINUOUS_COLUMNS = ["AvgCyclomatic","AvgCyclomaticModified","AvgCyclomaticStri
                       "css_included","style_tags","inline_css"]
 
 
-def maybe_download(train_data, test_data):
-  """Maybe downloads training data and returns train and test file names."""
-  if train_data:
-    train_file_name = train_data
-  else:
-    train_file = tempfile.NamedTemporaryFile(delete=False)
-    urllib.request.urlretrieve("http://mlr.cs.umass.edu/ml/machine-learning-databases/adult/adult.data", train_file.name)  # pylint: disable=line-too-long
-    train_file_name = train_file.name
-    train_file.close()
-    print("Training data is downloaded to %s" % train_file_name)
-
-  if test_data:
-    test_file_name = test_data
-  else:
-    test_file = tempfile.NamedTemporaryFile(delete=False)
-    urllib.request.urlretrieve("http://mlr.cs.umass.edu/ml/machine-learning-databases/adult/adult.test", test_file.name)  # pylint: disable=line-too-long
-    test_file_name = test_file.name
-    test_file.close()
-    print("Test data is downloaded to %s" % test_file_name)
-
-  return train_file_name, test_file_name
-
 
 def build_estimator(model_dir, model_type):
   """Build an estimator."""
   # Sparse base columns.
-  gender = tf.contrib.layers.sparse_column_with_keys(column_name="gender",
-                                                     keys=["female", "male"])
-  education = tf.contrib.layers.sparse_column_with_hash_bucket(
-      "education", hash_bucket_size=1000)
-  relationship = tf.contrib.layers.sparse_column_with_hash_bucket(
-      "relationship", hash_bucket_size=100)
-  workclass = tf.contrib.layers.sparse_column_with_hash_bucket(
-      "workclass", hash_bucket_size=100)
-  occupation = tf.contrib.layers.sparse_column_with_hash_bucket(
-      "occupation", hash_bucket_size=1000)
-  native_country = tf.contrib.layers.sparse_column_with_hash_bucket(
-      "native_country", hash_bucket_size=1000)
+  sparse_cols = []
+  for name in CATEGORICAL_COLUMNS:
+    sparse_cols.append(tf.contrib.layers.sparse_column_with_hash_bucket(name, hash_bucket_size=1000))
 
   # Continuous base columns.
-  age = tf.contrib.layers.real_valued_column("age")
-  education_num = tf.contrib.layers.real_valued_column("education_num")
-  capital_gain = tf.contrib.layers.real_valued_column("capital_gain")
-  capital_loss = tf.contrib.layers.real_valued_column("capital_loss")
-  hours_per_week = tf.contrib.layers.real_valued_column("hours_per_week")
-
-  # Transformations.
-  age_buckets = tf.contrib.layers.bucketized_column(age,
-                                                    boundaries=[
-                                                        18, 25, 30, 35, 40, 45,
-                                                        50, 55, 60, 65
-                                                    ])
+  continuous_cols = []
+  for name in CONTINUOUS_COLUMNS:
+    continuous_cols.append(tf.contrib.layers.real_valued_column(name))
 
   # Wide columns and deep columns.
-  wide_columns = [gender, native_country, education, occupation, workclass,
-                  relationship, age_buckets,
-                  tf.contrib.layers.crossed_column([education, occupation],
-                                                   hash_bucket_size=int(1e4)),
-                  tf.contrib.layers.crossed_column(
-                      [age_buckets, education, occupation],
-                      hash_bucket_size=int(1e6)),
-                  tf.contrib.layers.crossed_column([native_country, occupation],
-                                                   hash_bucket_size=int(1e4))]
-  deep_columns = [
-      tf.contrib.layers.embedding_column(workclass, dimension=8),
-      tf.contrib.layers.embedding_column(education, dimension=8),
-      tf.contrib.layers.embedding_column(gender, dimension=8),
-      tf.contrib.layers.embedding_column(relationship, dimension=8),
-      tf.contrib.layers.embedding_column(native_country,
-                                         dimension=8),
-      tf.contrib.layers.embedding_column(occupation, dimension=8),
-      age,
-      education_num,
-      capital_gain,
-      capital_loss,
-      hours_per_week,
-  ]
+  # wide_columns = [gender, native_country, education, occupation, workclass,
+  #                 relationship, age_buckets,
+  #                 tf.contrib.layers.crossed_column([education, occupation],
+  #                                                  hash_bucket_size=int(1e4)),
+  #                 tf.contrib.layers.crossed_column(
+  #                     [age_buckets, education, occupation],
+  #                     hash_bucket_size=int(1e6)),
+  #                 tf.contrib.layers.crossed_column([native_country, occupation],
+  #                                                  hash_bucket_size=int(1e4))]
+  wide_columns = sparse_cols
+  # deep_columns = [
+  #     tf.contrib.layers.embedding_column(workclass, dimension=8),
+  #     tf.contrib.layers.embedding_column(education, dimension=8),
+  #     tf.contrib.layers.embedding_column(gender, dimension=8),
+  #     tf.contrib.layers.embedding_column(relationship, dimension=8),
+  #     tf.contrib.layers.embedding_column(native_country,
+  #                                        dimension=8),
+  #     tf.contrib.layers.embedding_column(occupation, dimension=8),
+  #     age,
+  #     education_num,
+  #     capital_gain,
+  #     capital_loss,
+  #     hours_per_week,
+  # ]
+  deep_columns = continuous_cols
 
   if model_type == "wide":
     m = tf.contrib.learn.LinearClassifier(model_dir=model_dir,
@@ -180,9 +142,9 @@ def train_and_eval(model_dir, model_type, train_steps, train_data, test_data):
   df_test = df_test.dropna(how='any', axis=0)
 
   df_train[LABEL_COLUMN] = (
-      df_train["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
+      df_train["Defected"].apply(lambda x: "yes" == x)).astype(int)
   df_test[LABEL_COLUMN] = (
-      df_test["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
+      df_test["Defected"].apply(lambda x: "yes" == x)).astype(int)
 
   model_dir = tempfile.mkdtemp() if not model_dir else model_dir
   print("model directory = %s" % model_dir)
