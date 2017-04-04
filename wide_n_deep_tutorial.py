@@ -92,38 +92,36 @@ def build_estimator(model_dir, model_type):
         model_dir=model_dir,
         linear_feature_columns=wide_columns,
         dnn_feature_columns=deep_columns,
-        dnn_hidden_units=[100, 50],
-        fix_global_step_increment_bug=True)
+        dnn_hidden_units=[100, 50])
   return m
 
-
 def input_fn(df):
-  """Input builder function."""
   # Creates a dictionary mapping from each continuous feature column name (k) to
   # the values of that column stored in a constant Tensor.
-  continuous_cols = {k: tf.constant(df[k].values) for k in CONTINUOUS_COLUMNS}
+  continuous_cols = {k: tf.constant(df[k].values)
+                     for k in CONTINUOUS_COLUMNS}
   # Creates a dictionary mapping from each categorical feature column name (k)
   # to the values of that column stored in a tf.SparseTensor.
-  categorical_cols = {
-      k: tf.SparseTensor(
-          indices=[[i, 0] for i in range(df[k].size)],
-          values=df[k].values,
-          dense_shape=[df[k].size, 1])
-      for k in CATEGORICAL_COLUMNS}
+  categorical_cols = {k: tf.SparseTensor(
+      indices=[[i, 0] for i in range(df[k].size)],
+      values=df[k].values,
+      shape=[df[k].size, 1])
+                      for k in CATEGORICAL_COLUMNS}
   # Merges the two dictionaries into one.
-  feature_cols = dict(continuous_cols)
-  feature_cols.update(categorical_cols)
+  feature_cols = dict(continuous_cols.items()).copy()
+  feature_cols.update(categorical_cols.items())
   # Converts the label column into a constant Tensor.
   label = tf.constant(df[LABEL_COLUMN].values)
   # Returns the feature columns and the label.
   return feature_cols, label
-
 
 def train_and_eval(model_dir, model_type, train_steps, train_data, test_data):
   """Train and evaluate the model."""
   #train_file_name = train_datatest_file_name = maybe_download(train_data, test_data)
   train_file_name = train_data
   test_file_name = test_data
+
+  print ("files ==> "+train_file_name+" "+test_file_name)
 
   df_train = pd.read_csv(
       tf.gfile.Open(train_file_name),
@@ -134,17 +132,19 @@ def train_and_eval(model_dir, model_type, train_steps, train_data, test_data):
       tf.gfile.Open(test_file_name),
       header=0,
       skipinitialspace=True,
-      skiprows=1,
       engine="python")
 
   # remove NaN elements
   df_train = df_train.dropna(how='any', axis=0)
   df_test = df_test.dropna(how='any', axis=0)
 
+  print ("str ==>  "+str(df_test.columns.tolist()))
+
+
   df_train[LABEL_COLUMN] = (
-      df_train["Defected"].apply(lambda x: "yes" == x)).astype(int)
+      df_train["Defected"].apply(lambda x: "yes" == x)).astype(str)
   df_test[LABEL_COLUMN] = (
-      df_test["Defected"].apply(lambda x: "yes" == x)).astype(int)
+      df_test["Defected"].apply(lambda x: "yes" == x)).astype(str)
 
   model_dir = tempfile.mkdtemp() if not model_dir else model_dir
   print("model directory = %s" % model_dir)
