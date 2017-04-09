@@ -27,9 +27,9 @@ import pandas as pd
 import tensorflow as tf
 
 LABEL_COLUMN = "label"
-CATEGORICAL_COLUMNS = ["Has_Session", "Has_Param", "DB_Query_Binary", "Has_HTML","Defected"]
+CATEGORICAL_COLUMNS = ["Has_Session", "Has_Param", "DB_Query_Binary", "Has_HTML"]
 CONTINUOUS_COLUMNS = ["AvgCyclomatic","AvgCyclomaticModified","AvgCyclomaticStrict","AvgEssential","AvgLine"
-                      ,"AvgLineBlank","AvgLineCode","AvgLineComment","CountDeclClass","CountDeclFile","CountDeclFunction",
+                      ,"AvgLineBlank","AvgLineCode","AvgLineComment","CountDeclClass","CountDeclFunction",
                       "CountLine","CountLineBlank","CountLineCode","CountLineComment","CountPath","CountStmt",
                       "CountStmtDecl","CountStmtExe","Cyclomatic","CyclomaticModified","CyclomaticStrict",
                       "Essential","MaxCyclomatic","MaxCyclomaticModified","MaxNesting","RatioCommentToCode","SumCyclomatic",
@@ -142,9 +142,9 @@ def train_and_eval(model_dir, model_type, train_steps, train_data, test_data):
 
 
   df_train[LABEL_COLUMN] = (
-      df_train["Defected"].apply(lambda x: "yes" == x)).astype(str)
+      df_train["Defected"].apply(lambda x: "yes" == x)).astype(int)
   df_test[LABEL_COLUMN] = (
-      df_test["Defected"].apply(lambda x: "yes" == x)).astype(str)
+      df_test["Defected"].apply(lambda x: "yes" == x)).astype(int)
 
   model_dir = tempfile.mkdtemp() if not model_dir else model_dir
   print("model directory = %s" % model_dir)
