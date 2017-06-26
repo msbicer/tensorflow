@@ -66,7 +66,7 @@ with tf.device(device_name):
     vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
     x = np.matrix(list(vocab_processor.fit_transform(x_text)))
 
-    strides = [1, 1, 1, 1]
+    strides = 1
 
     # Randomly shuffle data
     np.random.seed(10)
