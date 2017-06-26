@@ -8,7 +8,7 @@ import time
 import datetime
 import data_helpers
 from send_mail import send_email
-from text_cnn import TextCNN
+from text_cnn_new import TextCNN
 from tensorflow.contrib import learn
 
 project_name = sys.argv[1]
@@ -110,11 +110,11 @@ with tf.device(device_name):
             grad_summaries = []
             for g, v in grads_and_vars:
                 if g is not None:
-                    grad_hist_summary = tf.histogram_summary("{}/grad/hist".format(v.name), g)
-                    sparsity_summary = tf.scalar_summary("{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
+                    grad_hist_summary = tf.summary.histogram("{}/grad/hist".format(v.name), g)
+                    sparsity_summary = tf.summary.scalar("{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
                     grad_summaries.append(grad_hist_summary)
                     grad_summaries.append(sparsity_summary)
-            grad_summaries_merged = tf.merge_summary(grad_summaries)
+            grad_summaries_merged = tf.summary.merge(grad_summaries)
 
             # Output directory for models and summaries
             timestamp = time.strftime("%d_%m_%Y_%H_%M_%S")
@@ -124,21 +124,21 @@ with tf.device(device_name):
             mail_subject = project_name+" "+str(timestamp)
 
             # Summaries for loss and accuracy
-            loss_summary = tf.scalar_summary("loss", cnn.loss)
-            acc_summary = tf.scalar_summary("accuracy", cnn.accuracy)
-            tp_summary = tf.scalar_summary("tp", cnn.tp)
-            tn_summary = tf.scalar_summary("tn", cnn.tn)
-            fp_summary = tf.scalar_summary("fp", cnn.fp)
-            fn_summary = tf.scalar_summary("fn", cnn.fn)
+            loss_summary = tf.summary.scalar("loss", cnn.loss)
+            acc_summary = tf.summary.scalar("accuracy", cnn.accuracy)
+            tp_summary = tf.summary.scalar("tp", cnn.tp)
+            tn_summary = tf.summary.scalar("tn", cnn.tn)
+            fp_summary = tf.summary.scalar("fp", cnn.fp)
+            fn_summary = tf.summary.scalar("fn", cnn.fn)
             
             # Train Summaries
-            train_summary_op = tf.merge_summary([loss_summary, acc_summary, tp_summary, grad_summaries_merged])
+            train_summary_op = tf.summary.merge([loss_summary, acc_summary, tp_summary, grad_summaries_merged])
             train_summary_dir = os.path.join(out_dir, "summaries", "train")
             #train_summary_writer = tf.train.SummaryWriter(train_summary_dir, sess.graph)
             train_summary_writer = tf.summary.FileWriter(train_summary_dir, sess.graph)
 
             # Dev summaries
-            dev_summary_op = tf.merge_summary([loss_summary, acc_summary, tp_summary])
+            dev_summary_op = tf.summary.merge([loss_summary, acc_summary, tp_summary])
             dev_summary_dir = os.path.join(out_dir, "summaries", "dev")
             #dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph)
             dev_summary_writer = tf.summary.FileWriter(dev_summary_dir, sess.graph)
