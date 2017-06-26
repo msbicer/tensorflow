@@ -9,7 +9,7 @@ class TextCNN(object):
     """
     def __init__(
       self, sequence_length, num_classes, vocab_size,
-      embedding_size, filter_sizes, num_filters, device_name,l2_reg_lambda=0.0):
+      embedding_size, filter_sizes, num_filters, device_name,strides,l2_reg_lambda=0.0):
 
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
@@ -38,7 +38,7 @@ class TextCNN(object):
                 conv = tf.nn.conv2d(
                     self.embedded_chars_expanded,
                     W,
-                    strides=[1, 2, 2, 1],
+                    strides=strides,
                     padding="VALID",
                     name="conv")
                 # Apply nonlinearity
@@ -47,7 +47,7 @@ class TextCNN(object):
                 pooled = tf.nn.max_pool(
                     h,
                     ksize=[1, sequence_length - filter_size + 1, 1, 1],
-                    strides=[1, 2, 2, 1],
+                    strides=strides,
                     padding='VALID',
                     name="pool")
                 pooled_outputs.append(pooled)

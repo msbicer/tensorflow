@@ -64,7 +64,9 @@ with tf.device(device_name):
     # Build vocabulary
     max_document_length = max([len(x.split(" ")) for x in x_text])
     vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
-    x = np.array(list(vocab_processor.fit_transform(x_text)))
+    x = np.matrix(list(vocab_processor.fit_transform(x_text)))
+
+    strides = [1, 2, 2, 1]
 
     # Randomly shuffle data
     np.random.seed(10)
@@ -95,6 +97,7 @@ with tf.device(device_name):
                 filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
                 num_filters=FLAGS.num_filters,
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
+                strides=strides,
                 device_name=device_name)
 
             # Define Training procedure
