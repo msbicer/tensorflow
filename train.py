@@ -64,7 +64,7 @@ with tf.device(device_name):
     # Build vocabulary
     max_document_length = max([len(x.split(" ")) for x in x_text])
     vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
-    x = np.matrix(list(vocab_processor.fit_transform(x_text)))
+    x = np.array(list(vocab_processor.fit_transform(x_text)))
 
     strides = [1, 1, 1, 1]
 
